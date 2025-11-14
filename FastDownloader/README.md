@@ -97,6 +97,8 @@ lib.startDownload.argtypes = [
     ctypes.c_char_p,        # remoteCallbackUrl
     ctypes.POINTER(ctypes.c_bool),  # useSocket
 ]
+lib.startDownload.restype = ctypes.c_int
+
 lib.startMultiDownload.argtypes = [
     ctypes.POINTER(ctypes.c_char_p), # urls - URL数组
     ctypes.c_int,                    # urlCount - URL数量
@@ -109,6 +111,8 @@ lib.startMultiDownload.argtypes = [
     ctypes.c_char_p,                 # remoteCallbackUrl
     ctypes.POINTER(ctypes.c_bool),   # useSocket
 ]
+lib.startMultiDownload.restype = ctypes.c_int
+
 lib.getDownloader.argtypes = [
     ctypes.POINTER(ctypes.c_char_p), # urls - URL数组
     ctypes.c_int,                    # urlCount - URL数量
@@ -124,18 +128,18 @@ lib.pauseDownload.restype = ctypes.c_int
 
 lib.resumeDownload.argtypes = [ctypes.c_int]  # id
 lib.resumeDownload.restype = ctypes.c_int
-lib.startDownload.restype = lib.startMultiDownload.restype = ctypes.c_int
 
 # 定义进度回调函数
 last_downloaded = 0
 
 class Event(TypedDict):
-    Type: str
+    Type: Literal['start', 'startOne', 'update', 'end', 'endOne', 'msg']
     Name: str
 
 def callback_func(event_ptr, msg_ptr):
     global last_downloaded
     
+    # 将 ctypes 指针转换为字节数据，然后解码为 JSON
     try:
         # 从指针获取事件数据
         if event_ptr:
@@ -147,7 +151,10 @@ def callback_func(event_ptr, msg_ptr):
         # 从指针获取消息数据
         if msg_ptr:
             msg_data = ctypes.cast(msg_ptr, ctypes.c_char_p).value
-            msg_dict = json.loads(msg_data.decode('utf-8')) if msg_data else {}
+            msg_dict: dict[Literal["Total", "Added", "Speed"], int | float] | \
+                dict[Literal["Text"], str] | \
+                dict[Literal["Index", "Total", "URL"], str | int] | \
+                dict[None, None] = json.loads(msg_data.decode('utf-8')) if msg_data else {}
         else:
             msg_dict = {}
         
@@ -167,6 +174,26 @@ def callback_func(event_ptr, msg_ptr):
         elif event_type == 'msg':
             text = msg_dict.get('Text', '')
             print(f"\n{event_name}：{text}")
+        
+        elif event_type == 'startOne':
+            last_downloaded = 0
+            url = msg_dict.get('URL', '')
+            index = msg_dict.get('Index', 0)
+            total = msg_dict.get('Total', 0)
+            print(f"\n开始下载：{url}，这是第 {index} 个下载，总共 {total} 个。")
+        elif event_type == 'start':
+            last_downloaded = 0
+            print(f"\n开始下载")
+        elif event_type == 'endOne':
+            last_downloaded = 0
+            url = msg_dict.get('URL', '')
+            index = msg_dict.get('Index', 0)
+            total = msg_dict.get('Total', 0)
+            print(f"\n下载完成：{url}，这是第 {index} 个下载，总共 {total} 个。")
+        elif event_type == 'end':
+            last_downloaded = 0
+            print(f"\n下载完成！")
+
             
     except Exception as e:
         print(f"\n错误于回调函数中：{e}")
@@ -177,6 +204,7 @@ progress_cb = PROGRESS_CALLBACK(callback_func)
 # 单文件下载示例
 try:
     start_time = time.time()
+    # 正确处理useSocket参数
     use_socket_val = ctypes.c_bool(False)
     
     result = lib.startDownload(
@@ -187,7 +215,7 @@ try:
         progress_cb,  # callback
         False, # useCallbackURL
         None,  # remoteCallbackUrl
-        ctypes.byref(use_socket_val) if False else None,  # useSocket
+        ctypes.byref(use_socket_val),  # useSocket - 传递指针
     )
     
     print()
@@ -199,6 +227,7 @@ except Exception as e:
 
 # 多文件下载示例
 try:
+    start_time = time.time()
     urls = [b"https://example.com/file1.zip", b"https://example.com/file2.zip"]
     save_paths = [b"file1.zip", b"file2.zip"]
 
@@ -206,9 +235,12 @@ try:
     url_array = (ctypes.c_char_p * len(urls))(*urls)
     path_array = (ctypes.c_char_p * len(save_paths))(*save_paths)
 
-    # 启动多文件下载
+    # 正确处理useSocket参数
+    use_socket_val = ctypes.c_bool(False)
+
+    # 修改 startMultiDownload 调用部分
     result = lib.startMultiDownload(
-        url_array,  # urls
+        url_array,  # urlStrs
         len(urls),  # urlCount
         path_array,  # savePaths
         len(save_paths),  # pathCount
@@ -217,7 +249,7 @@ try:
         progress_cb,  # callback
         False, # useCallbackURL
         None,  # remoteCallbackUrl
-        ctypes.byref(use_socket_val) if False else None,  # useSocket
+        ctypes.byref(use_socket_val),  # useSocket
     )
     
     print()

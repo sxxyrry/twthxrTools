@@ -40,10 +40,12 @@ type EventType string
 
 // 定义可用的事件类型常量
 const (
-    EventTypeStart  EventType = "start"
-    EventTypeUpdate EventType = "update"
-    EventTypeEnd    EventType = "end"
-    EventTypeMsg    EventType = "msg"
+    EventTypeStart     EventType = "start"
+    EventTypeStartOne  EventType = "startOne"
+    EventTypeUpdate    EventType = "update"
+    EventTypeEnd       EventType = "end"
+    EventTypeEndOne    EventType = "endOne"
+    EventTypeMsg       EventType = "msg"
 )
 
 // Event 下载事件
@@ -117,9 +119,20 @@ func NewFastDownloader(config *DownloadConfig) *FastDownloader {
 func (fd *FastDownloader) StartDownload() error {
     // 验证URL和保存路径数量匹配
     if len(fd.config.URLs) != len(fd.config.SavePaths) {
+        SendMessage(fd, Event{
+            Type: EventTypeMsg,
+            Name: "错误",
+        }, map[string]interface{}{
+            "Text": "URL数量与保存路径数量不匹配",
+        })
         return fmt.Errorf("URL数量与保存路径数量不匹配")
     }
     
+    SendMessage(fd, Event{
+        Type: EventTypeStart,
+        Name: "开始下载",
+    }, map[string]interface{}{})
+
     // 顺序下载每个URL
     for i, url := range fd.config.URLs {
         fd.currentURLIndex = i
@@ -129,11 +142,11 @@ func (fd *FastDownloader) StartDownload() error {
         
         // 通知开始下载当前文件
         SendMessage(fd, Event{
-            Type: EventTypeStart,
-            Name: "start",
+            Type: EventTypeStartOne,
+            Name: "开始一个下载",
         }, map[string]interface{}{
             "URL": url,
-            "Index": i,
+            "Index": i + 1,
             "Total": len(fd.config.URLs),
         })
         
@@ -153,7 +166,21 @@ func (fd *FastDownloader) StartDownload() error {
         fd.lastDownloaded = 0
         fd.totalSize = 0
         fd.chunks = nil
+        SendMessage(fd, Event{
+            Type: EventTypeEndOne,
+            Name: "结束一个下载",
+        }, map[string]interface{}{
+            "URL": url,
+            "Index": i + 1,
+            "Total": len(fd.config.URLs),
+        })
     }
+
+
+    SendMessage(fd, Event{
+        Type: EventTypeEnd,
+        Name: "结束所有下载",
+    }, map[string]interface{}{})
     
     return nil
 }
