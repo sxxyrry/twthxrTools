@@ -13,7 +13,7 @@ FastDownloader 是一个高性能的多线程文件下载器，支持并发下�
 
 ## 安装
 
-将 [FastDownloader.dll](file://d:\project\NeoLink_Dashboard\FastDownloader\build\FastDownloader.dll) (Windows) 或 `libFastDownloader.so` (Linux（并未编译）) 文件放置在您的项目目录中。
+将 [FastDownloader.dll](./build/Windows/FastDownloader.dll) (Windows) 或 [FastDownloader.so](./build/Linux/libFastDownloader.so) (Linux（Ubuntu 22.04.5 LTS，因为作者只有这个虚拟机*）) 文件放置在您的项目目录中。
 
 ## API 参数说明
 
