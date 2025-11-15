@@ -11,6 +11,38 @@ FastDownloader 是一个高性能的多线程文件下载器，支持并发下�
 - 支持自定义线程数和分块大小
 - 提供 C 接口，支持 多语言调用
 
+## 许可证
+
+本项目基于 [GNU General Public License v3.0](https://www.gnu.org/licenses/gpl-3.0.en.html) 开源发布。
+
+## 使用的 Go 库
+
+- ### github.com/gorilla/websocket v1.5.3
+
+## 重新编译
+
+- Windows
+
+```bash
+# 在 FastDownloader 下
+# 清理并更新依赖
+go mod tidy
+
+# 编译共享库
+go build -buildmode=c-shared -o build/FastDownloader.dll .
+```
+
+- Linux
+
+```bash
+# 在 FastDownloader 下
+# 清理并更新依赖
+go mod tidy
+
+# 编译共享库
+go build -buildmode=c-shared -o build/FastDownloader.so .
+```
+
 ## 安装
 
 将 [FastDownloader.dll](./build/Windows/FastDownloader.dll) (Windows) 或 [FastDownloader.so](./build/Linux/libFastDownloader.so) (Linux（Ubuntu 22.04.5 LTS，因为作者只有这个虚拟机*）) 文件放置在您的项目目录中。
