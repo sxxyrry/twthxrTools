@@ -2,7 +2,7 @@
 
 # 现在有
 
-- ## [FastDownloader](/FastDownloader/README.md)
+- ## [TTHSD TT High Speed Downloader TT 快速下载器](https://github.com/sxxyrry/TTHighSpeedDownloader)
 
 ## 许可证
 
