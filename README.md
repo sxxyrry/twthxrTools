@@ -2,6 +2,7 @@
 
 # 现在有
 
+- ## [FD Fast Downloader 快速下载器（TT 快速下载器的旧版，大约为0.1.0版）](/FastDownloader/README.md)
 - ## [TTHSD TT High Speed Downloader TT 快速下载器](https://github.com/sxxyrry/TTHighSpeedDownloader)
 
 ## 许可证
