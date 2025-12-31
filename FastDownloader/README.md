@@ -1,5 +1,9 @@
 # FastDownloader
 
+> 本下载器版本为 ***旧版本*** 不建议在生产环境中使用本版本。 \
+> 此版本已经***不再更新*** \
+> 建议去使用最新的 [TTHighSpeedDownloader](https://github.com/sxxyrry/TTHighSpeedDownloader)
+
 FastDownloader 是一个高性能的多线程文件下载器，支持并发下载、断点续传和进度监控。该项目使用 Go 语言开发。编译为 dll 或者 so 供全平台、全语言调用。
 
 ## 功能特性
@@ -401,3 +405,4 @@ try:
 except Exception as e:
     print(f"错误发生：{e}")
 ```
+
